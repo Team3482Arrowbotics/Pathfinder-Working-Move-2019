@@ -23,6 +23,7 @@ public class OI {
   public static JoystickButton b; 
   public static JoystickButton x;  
   public static JoystickButton y;
+  private static final double ticks_per_centimeter = 2000/317.5; //travels 125in in 2000 encoder ticks
 
   public OI()
   {
@@ -33,6 +34,7 @@ public class OI {
     y = new JoystickButton(j, 4);
 
     a.whenPressed(new Move(2000)); 
+    b.whenPressed(new Move(ticks_per_centimeter*RobotMap.lidar.getDistance()));
 
 
     //a.whenPressed(new Move(RobotMap.lidar.getDistance())); 

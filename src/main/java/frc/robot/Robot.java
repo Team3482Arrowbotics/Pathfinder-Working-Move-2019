@@ -40,7 +40,8 @@ public class Robot extends TimedRobot {
 
   public SendableChooser<Command> m_chooser = new SendableChooser<>();
   public SendableChooser<String> pathChooser; 
-//
+  public SendableChooser<String> hatchOrCargo; 
+
   public static String turning = "Not Turning";
   public static double MOVE_SPEED = 0.6;
 
@@ -63,6 +64,7 @@ public class Robot extends TimedRobot {
 
   private Notifier follower_notifier; 
   private int state; 
+  private boolean hatch; 
   
   /**
    * This function is run when the robot is first started up and should be
@@ -76,6 +78,8 @@ public class Robot extends TimedRobot {
 
     driveEnabled = true; 
     pathChooser = new SendableChooser<String>(); 
+    hatchOrCargo = new SendableChooser<String>(); 
+
     
     pathChooser.setDefaultOption("Default", "????");
     pathChooser.addOption("LtoFrontRight", "LtoFrontRight");
@@ -87,10 +91,13 @@ public class Robot extends TimedRobot {
     pathChooser.addOption("LtoFrontRocket", "LtoFrontRocket");
     pathChooser.addOption("BacktoRocket", "BackToRocket");
     pathChooser.addOption("Leftturn", "LeftTurn");
-    pathChooser.addOption("Straight", "newrenb l");
+    pathChooser.addOption("Straight", "newre");
+
+    hatchOrCargo.setDefaultOption("Hatch", "Hatch");
+    hatchOrCargo.addOption("Cargo", "Cargo");
 
     SmartDashboard.putData("Path Chooser", pathChooser); 
-    
+    SmartDashboard.putData("Hatch or Cargo", hatchOrCargo);
     //m_chooser.setDefaultOption("Default Auto", new ExampleCommand());
     //SmartDashboard.putData(m_chooser);
     
@@ -106,7 +113,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    //System.out.println("Navx Robot Periodic: " + RobotMap.navx.getAngle()); +
+    //System.out.println("Navx Robot Periodic: " + RobotMap.navx.getAngle());
     //System.out.println("Lidar: " + RobotMap.lidar.getDistance()); 
     SmartDashboard.putNumber("Lidar", RobotMap.lidar.getDistance());
     SmartDashboard.putString("Turning", turning);
@@ -150,6 +157,14 @@ public class Robot extends TimedRobot {
     pathname = pathChooser.getSelected(); 
     SmartDashboard.putString("Selected Path", pathname);
 
+    if(hatchOrCargo.getSelected().equals("Hatch"))
+    {
+      hatch = true;
+    }
+    else
+    {
+      hatch = false; 
+    }
     /*
      * String autoSelected = SmartDashboard.getString("Auto Selector",
      * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
@@ -241,57 +256,76 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     Scheduler.getInstance().run();
 /*
-    if(state == 1)
+    if(hatch)
     {
-      Trajectory left_trajectory = PathfinderFRC.getTrajectory(pathname + ".right");
-      Trajectory right_trajectory = PathfinderFRC.getTrajectory(pathname+ ".left");
-  
-      l_enc_follower = new EncoderFollower(left_trajectory);
-      r_enc_follower = new EncoderFollower(right_trajectory);
-      l_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
-      l_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
-      r_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
-      r_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
-      follower_notifier = new Notifier(this::followPath);
-      follower_notifier.startPeriodic(left_trajectory.get(0).dt);
-      state = 2; 
-    }
-    else if(state ==2)
-    {
-      //start vision
-      state = 3; 
-    }
-    else if(state ==3)
-    {
-      //hatch outtake 
-      state = 4; 
-    }
-    else if (state ==4)
-    {
-      //back up turn around
-      state = 5; 
-    }
-    else if(state ==5)
-    {
-      pathname = pathChooser.getSelected(); 
-      left_trajectory = PathfinderFRC.getTrajectory(pathname + ".right");
-      right_trajectory = PathfinderFRC.getTrajectory(pathname+ ".left");
-  
-      l_enc_follower = new EncoderFollower(left_trajectory);
-      r_enc_follower = new EncoderFollower(right_trajectory);
-      l_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
-      l_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
-      r_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
-      r_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
-      follower_notifier = new Notifier(this::followPath);
-      follower_notifier.startPeriodic(left_trajectory.get(0).dt);
-
-      state = 6; 
-    }
-    else if(state == 6)
-    {
-      //hatch intake 
+      if(state == 1)
+      {
+        Trajectory left_trajectory = PathfinderFRC.getTrajectory(pathname + ".right");
+        Trajectory right_trajectory = PathfinderFRC.getTrajectory(pathname+ ".left");
+    
+        l_enc_follower = new EncoderFollower(left_trajectory);
+        r_enc_follower = new EncoderFollower(right_trajectory);
+        l_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
+        l_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
+        r_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
+        r_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
+        follower_notifier = new Notifier(this::followPath);
+        follower_notifier.startPeriodic(left_trajectory.get(0).dt);
+        state = 2; 
+      }
+      else if(state ==2)
+      {
+        //start vision
+        state = 3; 
+      }
+      else if(state ==3)
+      {
+        //hatch outtake 
+        state = 4; 
+      }
+      else if (state ==4)
+      {
+        //back up turn around
+        state = 5; 
+      }
+      else if(state ==5)
+      {
+        if(pathname.equals(""))
+        {
+          Trajectory left_trajectory = PathfinderFRC.getTrajectory(pathname + ".right");
+          Trajectory right_trajectory = PathfinderFRC.getTrajectory(pathname+ ".left");
+      
+          l_enc_follower = new EncoderFollower(left_trajectory);
+          r_enc_follower = new EncoderFollower(right_trajectory);
+          l_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
+          l_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
+          r_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
+          r_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
+          follower_notifier = new Notifier(this::followPath);
+          follower_notifier.startPeriodic(left_trajectory.get(0).dt);
+        }
+        else if(pathname.equals(""))
+        {
+          Trajectory left_trajectory = PathfinderFRC.getTrajectory(pathname + ".right");
+          Trajectory right_trajectory = PathfinderFRC.getTrajectory(pathname+ ".left");
+      
+          l_enc_follower = new EncoderFollower(left_trajectory);
+          r_enc_follower = new EncoderFollower(right_trajectory);
+          l_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
+          l_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
+          r_enc_follower.configureEncoder(RobotMap.encoderLeft.get(), k_ticks_per_rev, k_wheel_diameter);
+          r_enc_follower.configurePIDVA(0.8, 0.0, 0.0, 1 / k_max_velocity, 0);
+          follower_notifier = new Notifier(this::followPath);
+          follower_notifier.startPeriodic(left_trajectory.get(0).dt);
+        } 
+        state = 6; 
+      }
+      else if(state == 6)
+      {
+        //hatch intake 
+      }
     }*/
+    
 
     
 
@@ -371,9 +405,9 @@ public class Robot extends TimedRobot {
     double speed = OI.j.getRawAxis(1);
     double turnSpeed = OI.j.getRawAxis(4);
 
-    /*if (driveEnabled) {
+    if (driveEnabled) {
 			RobotMap.drive.arcadeDrive(0.7*turnSpeed, -0.7*speed);
-		}*/
+		}
     //SmartDashboard.putNumber("Speed", RobotMap.left.getSelectedSensorVelocity());
 
 
